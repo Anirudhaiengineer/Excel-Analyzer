@@ -26,8 +26,9 @@ def set_skewness(df,column):
     skew=df[column].skew()
     return skew
 
-def relation_btw_columns(df, col1, col2, op):
-    result_col = f"{col1}_{op}_{col2}"
+def relation_btw_columns(df, col1, col2, op, result_col=None):
+    if result_col is None:
+        result_col = f"{col1}_{op}_{col2}"
     if op == '+':
         df[result_col] = df[col1] + df[col2]
     elif op == '-':

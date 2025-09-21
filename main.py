@@ -136,20 +136,35 @@ if upload_file is not None:
         # 4. Relations Between Columns
         # -------------------------------
         st.subheader("➕ Relation Between Columns")
-        uid = str(uuid.uuid4())[:8]
+        if 'relation_ops' not in st.session_state:
+            st.session_state.relation_ops = []
+        if 'relation_count' not in st.session_state:
+            st.session_state.relation_count = 1
 
-        col1, col2, col3 = st.columns([2, 1, 2])
-        with col1:
-            col_a = st.selectbox("Select Column 1", options=col_list, key=f"relation_col_a_{uid}")
-        with col2:
-            operation = st.selectbox("Select Operation", options=['+', '-', '*', '/', 'Concat'], key=f"relation_operation_{uid}")
-        with col3:
-            col_b = st.selectbox("Select Column 2", options=col_list, key=f"relation_col_b_{uid}")
+        for i in range(st.session_state.relation_count):
+            uid = str(uuid.uuid4())[:8]
+            col1, col2, col3, col4 = st.columns([2, 1, 2, 2])
+            with col1:
+                col_a = st.selectbox(f"Select Column 1 (Relation {i+1})", options=col_list, key=f"relation_col_a_{uid}")
+            with col2:
+                operation = st.selectbox(f"Select Operation (Relation {i+1})", options=['+', '-', '*', '/', 'Concat'], key=f"relation_operation_{uid}")
+            with col3:
+                col_b = st.selectbox(f"Select Column 2 (Relation {i+1})", options=col_list, key=f"relation_col_b_{uid}")
+            with col4:
+                output_col = st.text_input(f"Output Column (Relation {i+1})", value=f"{col_a}_{operation}_{col_b}", key=f"relation_output_col_{uid}")
+            if len(st.session_state.relation_ops) <= i:
+                st.session_state.relation_ops.append((col_a, col_b, operation, output_col))
+            else:
+                st.session_state.relation_ops[i] = (col_a, col_b, operation, output_col)
 
-        if st.button("Apply Operation", key=f"relation_apply_button_{uid}"):
-            df = Excel.relation_btw_columns(df, col_a, col_b, operation)
+        if st.button("Add Another Relation"):
+            st.session_state.relation_count += 1
+
+        if st.button("Apply All Relations"):
+            for col_a, col_b, operation, output_col in st.session_state.relation_ops:
+                df = Excel.relation_btw_columns(df, col_a, col_b, operation, output_col)
             st.session_state.df = df
-            st.success("✅ Operation applied successfully (new column added)")
+            st.success("✅ All operations applied successfully (new/existing columns updated)")
 
         # -------------------------------
         # Final Preview
